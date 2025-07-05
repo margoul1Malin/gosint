@@ -1,0 +1,25 @@
+{
+    "host": "climgo.fr",
+    "port": 443,
+    "protocol": "http",
+    "isPublic": false,
+    "status": "IN_PROGRESS",
+    "startTime": 1751719017582,
+    "engineVersion": "2.4.1",
+    "criteriaVersion": "2009q",
+    "endpoints": [
+      {
+        "ipAddress": "2001:41d0:301:0:0:0:0:100",
+        "statusMessage": "In progress",
+        "statusDetails": "TESTING_STRICT_RI",
+        "statusDetailsMessage": "Testing Strict Renegotiation",
+        "delegation": 1
+      },
+      {
+        "ipAddress": "5.135.23.164",
+        "serverName": "cluster100.hosting.ovh.net",
+        "statusMessage": "Pending",
+        "delegation": 1
+      }
+    ]
+  }

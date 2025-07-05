@@ -1,0 +1,350 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String  @db.ObjectId
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.String
+  access_token      String? @db.String
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.String
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  sessionToken String   @unique
+  userId       String   @db.ObjectId
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model User {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  email         String    @unique
+  phone         String?   // Rendu optionnel
+  emailVerified DateTime?
+  phoneVerified DateTime?
+  password      String
+  name          String?
+  firstName     String?
+  lastName      String?
+  image         String?
+  role          Role      @default(USER)
+  status        UserStatus @default(ACTIVE)
+
+  // Préférences
+  language      String    @default("fr")
+  timezone      String    @default("Europe/Paris")
+  
+  // Métadonnées
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastLoginAt   DateTime?
+  lastActiveAt  DateTime?
+  
+  // Statistiques d'utilisation
+  loginCount    Int       @default(0)
+  toolsUsed     String[]  @default([])
+  
+  // Relations
+  accounts      Account[]
+  sessions      Session[]
+  
+  // Logs d'activité
+  activityLogs  ActivityLog[]
+  
+  // Favoris et historique
+  favorites     Favorite[]
+  searchHistory SearchHistory[]
+  
+  // Messages de contact
+  contacts      Contact[]
+  
+  // Notifications
+  notifications Notification[]
+  
+  // Clés API utilisateur
+  userApiKeys   UserApiKeys[]
+
+  @@map("users")
+}
+
+model VerificationToken {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  identifier String
+  token      String   @unique
+  expires    DateTime
+  type       TokenType @default(EMAIL_VERIFICATION)
+  used       Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+
+  @@unique([identifier, token])
+  @@map("verificationtokens")
+}
+
+model ActivityLog {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  action    String
+  details   Json?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("activity_logs")
+}
+
+model Favorite {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  toolId    String   @db.ObjectId
+  createdAt DateTime @default(now())
+  
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tool Tool @relation(fields: [toolId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, toolId])
+  @@map("favorites")
+}
+
+model SearchHistory {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  toolId    String?  @db.ObjectId
+  query     String
+  results   Json?
+  createdAt DateTime @default(now())
+  
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tool Tool? @relation(fields: [toolId], references: [id], onDelete: SetNull)
+
+  @@map("search_history")
+}
+
+model Contact {
+  id        String      @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  email     String
+  phone     String?
+  company   String?
+  subject   String
+  message   String
+  category  ContactCategory @default(GENERAL)
+  status    ContactStatus   @default(PENDING)
+  priority  ContactPriority @default(NORMAL)
+  
+  // Relation avec l'utilisateur
+  userId    String      @db.ObjectId
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Métadonnées
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Informations techniques
+  ipAddress String?
+  userAgent String?
+  
+  // Réponse
+  response  String?
+  respondedAt DateTime?
+  respondedBy String?
+
+  @@map("contacts")
+}
+
+model Notification {
+  id        String           @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String           @db.ObjectId
+  type      NotificationType @default(INFO)
+  title     String
+  message   String
+  isRead    Boolean          @default(false)
+  metadata  Json?            // Données supplémentaires (IDs, liens, etc.)
+  
+  // Relation avec l'utilisateur
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Métadonnées
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  readAt    DateTime?        // Date de lecture
+
+  @@map("notifications")
+}
+
+model UserApiKeys {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId @unique
+  
+  // Toutes les clés API de l'utilisateur stockées de manière chiffrée
+  apiKeys   Json     // Structure: { leakCheck: "...", numVerify: "...", twilioSid: "...", twilioToken: "...", ... }
+  
+  // Métadonnées
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lastUsed  DateTime?
+  
+  // Relation avec l'utilisateur
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("user_api_keys")
+}
+
+// Enums
+enum Role {
+  USER
+  PREMIUM
+  ADMIN
+  MODERATOR
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  BANNED
+}
+
+enum TokenType {
+  EMAIL_VERIFICATION
+  PHONE_VERIFICATION
+  PASSWORD_RESET
+  ACCOUNT_ACTIVATION
+}
+
+enum ContactCategory {
+  GENERAL
+  TECHNICAL_SUPPORT
+  BILLING
+  FEATURE_REQUEST
+  BUG_REPORT
+  PARTNERSHIP
+  SECURITY
+  LEGAL
+}
+
+enum ContactStatus {
+  PENDING
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum ContactPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+  ADMIN_REPLY
+  SYSTEM_UPDATE
+  SECURITY_ALERT
+}
+
+// Modèles pour les outils OSINT
+model Category {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  slug        String   @unique
+  description String
+  icon        String
+  color       String
+  isActive    Boolean  @default(true)
+  order       Int      @default(0)
+  
+  // Relations - IDs des outils associés
+  toolIds     String[] @db.ObjectId
+  
+  // Métadonnées
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?  @db.ObjectId
+  updatedBy   String?  @db.ObjectId
+  
+  @@map("categories")
+}
+
+model Tool {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  slug            String   @unique
+  description     String
+  longDescription String
+  icon            String
+  difficulty      ToolDifficulty @default(BEGINNER)
+  isPremium       Boolean  @default(false)
+  isActive        Boolean  @default(true)
+  order           Int      @default(0)
+  
+  // Contenu
+  tags            String[]
+  features        String[]
+  useCases        String[]
+  
+  // Configuration
+  apiRequired     Boolean  @default(false)
+  configSchema    Json?    // Schema de configuration pour l'outil
+  
+  // Liens externes
+  externalLinks   Json?    // Array de {name, url}
+  
+  // Statistiques
+  viewCount       Int      @default(0)
+  useCount        Int      @default(0)
+  
+  // Relations - IDs des catégories associées
+  categoryIds     String[] @db.ObjectId
+  
+  // Métadonnées
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdBy       String?  @db.ObjectId
+  updatedBy       String?  @db.ObjectId
+  
+  // Favoris et historique
+  favorites       Favorite[]
+  searchHistory   SearchHistory[]
+  
+  @@map("tools")
+}
+
+// Enum pour la difficulté des outils
+enum ToolDifficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+} 
