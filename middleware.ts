@@ -24,6 +24,15 @@ export async function middleware(request: NextRequest) {
     '/browserconfig.xml'
   ]
   
+  // Routes API publiques accessibles sans authentification
+  const publicApiRoutes = [
+    '/api/categories',
+    '/api/categories/',
+    '/api/tools/',
+    '/api/contact',
+    '/api/test-auth'
+  ]
+  
   // Vérifier si c'est une route système
   const isSystemRoute = systemRoutes.some(route => 
     pathname.startsWith(route)
@@ -33,13 +42,22 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
   
+  // Vérifier si c'est une route API publique
+  const isPublicApiRoute = publicApiRoutes.some(route => 
+    pathname.startsWith(route)
+  )
+  
+  if (isPublicApiRoute) {
+    return NextResponse.next()
+  }
+  
   // Vérifier si la page est publique
   const isPublicPage = publicPages.includes(pathname)
   
   if (isPublicPage) {
     return NextResponse.next()
   }
-  
+
   // Pour toutes les autres pages, vérifier si l'utilisateur est connecté
   try {
     const token = await getToken({ 

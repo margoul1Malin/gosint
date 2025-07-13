@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Save, AlertCircle, Loader2 } from 'lucide-react'
+import { ArrowLeft, Save, AlertCircle, Loader2, Settings, Tag, FileText, Eye, EyeOff } from 'lucide-react'
 import Header from '@/app/components/Header'
 import Footer from '@/app/components/Footer'
 import IconSelector from '@/app/components/IconSelector'
@@ -137,13 +137,13 @@ export default function NewToolPage() {
   // Vérifier l'authentification
   if (!session?.user || session.user.role !== 'ADMIN') {
     return (
-      <div className="min-h-screen bg-background text-foreground">
+      <div className="min-h-screen bg-gray-900 text-white">
         <Header />
-        <div className="container mx-auto px-4 py-8 mt-24">
+        <div className="container mx-auto px-4 py-8 pt-32">
           <div className="text-center">
             <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
             <h1 className="text-2xl font-bold text-red-400 mb-2">Accès refusé</h1>
-            <p className="text-foreground/70">Vous n'avez pas les permissions nécessaires pour accéder à cette page.</p>
+            <p className="text-gray-400">Vous n'avez pas les permissions nécessaires pour accéder à cette page.</p>
           </div>
         </div>
         <Footer />
@@ -152,181 +152,241 @@ export default function NewToolPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-gray-900 text-white">
       <Header />
       
-      <div className="container mx-auto px-4 py-8 mt-24">
-        {/* En-tête */}
-        <div className="flex items-center gap-4 mb-8">
-          <button
-            onClick={() => router.back()}
-            className="flex items-center gap-2 px-4 py-2 bg-surface/30 border border-secondary/30 rounded-lg hover:bg-surface/50 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Retour
-          </button>
-          <h1 className="text-3xl font-bold text-accent">Créer un nouvel outil</h1>
+      <div className="container mx-auto px-4 py-8 pt-32">
+        {/* En-tête avec design amélioré */}
+        <div className="mb-8">
+          <div className="flex items-center gap-4 mb-4">
+            <button
+              onClick={() => router.back()}
+              className="flex items-center gap-2 px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg hover:bg-gray-700 transition-all duration-200 hover:border-blue-500/50"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Retour
+            </button>
+          </div>
+          
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full mb-4">
+              <Settings className="w-8 h-8 text-white" />
+            </div>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent mb-2">
+              Créer un nouvel outil
+            </h1>
+            <p className="text-gray-400 text-lg">
+              Ajoutez un nouvel outil à votre plateforme OSINT
+            </p>
+          </div>
         </div>
 
-        {/* Messages */}
-        {error && (
-          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
-            <div className="flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-red-400" />
-              <span className="text-red-400">{error}</span>
+        {/* Messages d'alerte améliorés */}
+        <div className="max-w-4xl mx-auto mb-8">
+          {error && (
+            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg backdrop-blur-sm">
+              <div className="flex items-center gap-3">
+                <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
+                <span className="text-red-400">{error}</span>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {success && (
-          <div className="mb-6 p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
-            <span className="text-green-400">{success}</span>
-          </div>
-        )}
-
-        {/* Formulaire */}
-        <form onSubmit={handleSubmit} className="max-w-2xl mx-auto">
-          <div className="bg-surface/20 backdrop-blur-sm border border-secondary/30 rounded-lg p-6 space-y-6">
-            
-            {/* Nom */}
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-foreground/80 mb-2">
-                Nom de l'outil <span className="text-red-400">*</span>
-              </label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                required
-                className="w-full px-4 py-2 bg-surface/30 border border-secondary/30 rounded-lg focus:outline-none focus:border-accent transition-colors"
-                placeholder="Ex: Vérificateur d'emails"
-              />
-            </div>
-
-            {/* Slug */}
-            <div>
-              <label htmlFor="slug" className="block text-sm font-medium text-foreground/80 mb-2">
-                Slug <span className="text-red-400">*</span>
-              </label>
-              <input
-                type="text"
-                id="slug"
-                name="slug"
-                value={formData.slug}
-                onChange={handleInputChange}
-                required
-                className="w-full px-4 py-2 bg-surface/30 border border-secondary/30 rounded-lg focus:outline-none focus:border-accent transition-colors"
-                placeholder="Ex: verificateur-emails"
-              />
-              <p className="text-xs text-foreground/50 mt-1">
-                URL: /tools/{formData.slug}
-              </p>
-            </div>
-
-            {/* Description */}
-            <div>
-              <label htmlFor="description" className="block text-sm font-medium text-foreground/80 mb-2">
-                Description <span className="text-red-400">*</span>
-              </label>
-              <textarea
-                id="description"
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-                required
-                rows={3}
-                className="w-full px-4 py-2 bg-surface/30 border border-secondary/30 rounded-lg focus:outline-none focus:border-accent transition-colors resize-none"
-                placeholder="Description courte de l'outil..."
-              />
-            </div>
-
-            {/* Catégorie */}
-            <div>
-              <label htmlFor="categoryId" className="block text-sm font-medium text-foreground/80 mb-2">
-                Catégorie <span className="text-red-400">*</span>
-              </label>
-              {loadingCategories ? (
-                <div className="flex items-center gap-2 text-foreground/50">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Chargement des catégories...
+          {success && (
+            <div className="mb-6 p-4 bg-green-500/10 border border-green-500/20 rounded-lg backdrop-blur-sm">
+              <div className="flex items-center gap-3">
+                <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+                  <span className="text-white text-xs">✓</span>
                 </div>
-              ) : (
-                <select
-                  id="categoryId"
-                  name="categoryId"
-                  value={formData.categoryId}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-4 py-2 bg-surface/30 border border-secondary/30 rounded-lg focus:outline-none focus:border-accent transition-colors"
-                >
-                  <option value="">Sélectionner une catégorie</option>
-                  {categories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.icon} {category.name}
-                    </option>
-                  ))}
-                </select>
-              )}
+                <span className="text-green-400">{success}</span>
+              </div>
             </div>
+          )}
+        </div>
 
-            {/* Icône */}
-            <div>
-              <label className="block text-sm font-medium text-foreground/80 mb-2">
-                Icône <span className="text-red-400">*</span>
-              </label>
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  {formData.icon && (
-                    <div className="w-8 h-8 flex items-center justify-center bg-accent/10 rounded">
-                      <span className="text-lg">{formData.icon}</span>
-                    </div>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => setShowIconSelector(true)}
-                    className="px-4 py-2 bg-accent/10 border border-accent/30 rounded-lg hover:bg-accent/20 transition-colors"
-                  >
-                    {formData.icon ? 'Changer l\'icône' : 'Choisir une icône'}
-                  </button>
+        {/* Formulaire redesigné */}
+        <div className="max-w-4xl mx-auto">
+          <form onSubmit={handleSubmit} className="space-y-8">
+            
+            {/* Section Informations générales */}
+            <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                  <FileText className="w-5 h-5 text-blue-400" />
+                </div>
+                <h2 className="text-xl font-semibold text-white">Informations générales</h2>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Nom */}
+                <div className="lg:col-span-1">
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-3">
+                    Nom de l'outil <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-4 py-3 bg-gray-900/50 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200 text-white placeholder-gray-400"
+                    placeholder="Ex: Vérificateur d'emails"
+                  />
+                </div>
+
+                {/* Slug */}
+                <div className="lg:col-span-1">
+                  <label htmlFor="slug" className="block text-sm font-medium text-gray-300 mb-3">
+                    Slug <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="slug"
+                    name="slug"
+                    value={formData.slug}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-4 py-3 bg-gray-900/50 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200 text-white placeholder-gray-400"
+                    placeholder="Ex: verificateur-emails"
+                  />
+                  <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
+                    <span className="text-blue-400">URL:</span> /tools/{formData.slug || 'votre-slug'}
+                  </p>
+                </div>
+
+                {/* Description */}
+                <div className="lg:col-span-2">
+                  <label htmlFor="description" className="block text-sm font-medium text-gray-300 mb-3">
+                    Description <span className="text-red-400">*</span>
+                  </label>
+                  <textarea
+                    id="description"
+                    name="description"
+                    value={formData.description}
+                    onChange={handleInputChange}
+                    required
+                    rows={4}
+                    className="w-full px-4 py-3 bg-gray-900/50 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200 resize-none text-white placeholder-gray-400"
+                    placeholder="Description courte et claire de l'outil..."
+                  />
                 </div>
               </div>
             </div>
 
-            {/* Statut */}
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="isActive"
-                name="isActive"
-                checked={formData.isActive}
-                onChange={handleInputChange}
-                className="w-4 h-4 text-accent bg-surface/30 border-secondary/30 rounded focus:ring-accent focus:ring-2"
-              />
-              <label htmlFor="isActive" className="text-sm text-foreground/80">
-                Outil actif
-              </label>
+            {/* Section Configuration */}
+            <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
+                  <Tag className="w-5 h-5 text-purple-400" />
+                </div>
+                <h2 className="text-xl font-semibold text-white">Configuration</h2>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Catégorie */}
+                <div className="lg:col-span-1">
+                  <label htmlFor="categoryId" className="block text-sm font-medium text-gray-300 mb-3">
+                    Catégorie <span className="text-red-400">*</span>
+                  </label>
+                  {loadingCategories ? (
+                    <div className="flex items-center gap-2 text-gray-400 p-3 bg-gray-900/50 border border-gray-600 rounded-lg">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Chargement des catégories...
+                    </div>
+                  ) : (
+                    <select
+                      id="categoryId"
+                      name="categoryId"
+                      value={formData.categoryId}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-3 bg-gray-900/50 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200 text-white"
+                    >
+                      <option value="">Sélectionner une catégorie</option>
+                      {categories.map((category) => (
+                        <option key={category.id} value={category.id}>
+                          {category.icon} {category.name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+
+                {/* Icône */}
+                <div className="lg:col-span-1">
+                  <label className="block text-sm font-medium text-gray-300 mb-3">
+                    Icône <span className="text-red-400">*</span>
+                  </label>
+                  <div className="flex items-center gap-4">
+                    {formData.icon && (
+                      <div className="w-12 h-12 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/30 rounded-lg flex items-center justify-center">
+                        <span className="text-xl">{formData.icon}</span>
+                      </div>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setShowIconSelector(true)}
+                      className="px-4 py-3 bg-blue-500/20 border border-blue-500/30 rounded-lg hover:bg-blue-500/30 transition-all duration-200 text-blue-400 hover:text-blue-300"
+                    >
+                      {formData.icon ? 'Changer l\'icône' : 'Choisir une icône'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Statut */}
+                <div className="lg:col-span-2">
+                  <div className="flex items-center gap-3 p-4 bg-gray-900/30 border border-gray-600 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        id="isActive"
+                        name="isActive"
+                        checked={formData.isActive}
+                        onChange={handleInputChange}
+                        className="w-5 h-5 text-blue-500 bg-gray-800 border-gray-600 rounded focus:ring-blue-500/50 focus:ring-2"
+                      />
+                      <label htmlFor="isActive" className="flex items-center gap-2 text-gray-300">
+                        {formData.isActive ? (
+                          <Eye className="w-4 h-4 text-green-400" />
+                        ) : (
+                          <EyeOff className="w-4 h-4 text-gray-500" />
+                        )}
+                        <span>Outil actif et visible</span>
+                      </label>
+                    </div>
+                    <div className="ml-auto">
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        formData.isActive 
+                          ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                          : 'bg-gray-500/20 text-gray-400 border border-gray-500/30'
+                      }`}>
+                        {formData.isActive ? 'Actif' : 'Inactif'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            {/* Boutons */}
-            <div className="flex gap-4 pt-6">
+            {/* Boutons d'action */}
+            <div className="flex flex-col sm:flex-row gap-4 pt-6">
               <button
                 type="button"
                 onClick={() => router.back()}
-                className="flex-1 px-6 py-3 bg-surface/30 border border-secondary/30 rounded-lg hover:bg-surface/50 transition-colors"
+                className="flex-1 px-6 py-3 bg-gray-800 border border-gray-700 rounded-lg hover:bg-gray-700 hover:border-gray-600 transition-all duration-200 text-gray-300 hover:text-white"
               >
                 Annuler
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 px-6 py-3 bg-accent text-background rounded-lg hover:bg-accent/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-medium"
               >
                 {loading ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Création...
+                    Création en cours...
                   </>
                 ) : (
                   <>
@@ -336,8 +396,8 @@ export default function NewToolPage() {
                 )}
               </button>
             </div>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
 
       {/* Sélecteur d'icône */}
